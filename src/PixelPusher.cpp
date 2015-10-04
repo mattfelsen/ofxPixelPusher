@@ -1,4 +1,8 @@
+#ifdef TARGET_WIN32
 #include "stdafx.h"
+#endif
+
+#include "ofLog.h"
 #include "PixelPusher.h"
 #include <algorithm>
 #include <ctime>
@@ -24,7 +28,7 @@ PixelPusher::PixelPusher(DeviceHeader* header) {
   int packetLength = header->getPacketRemainderLength();
 
   if(packetLength < 28) {
-    sdfLog::logFormat("Packet size is too small! PixelPusher can't be created.");
+    ofLogError() << "Packet size is too small! PixelPusher can't be created.";
   }
 
   memcpy(&mStripsAttached, &packetRemainder.get()[0], 1);
@@ -67,9 +71,6 @@ PixelPusher::PixelPusher(DeviceHeader* header) {
   }
 
   mPacket.reserve(400*mMaxStripsPerPacket); //too high, can be reduced
-}
-
-PixelPusher::~PixelPusher() {
 }
 
 int PixelPusher::getNumberOfStrips() {
@@ -143,7 +144,7 @@ void PixelPusher::sendPacket() {
   
   mTotalDelay = mThreadDelay + mThreadExtraDelay + mExtraDelayMsec;
   
-  sdfLog::logFormat("Total delay for PixelPusher %s is %ld", getMacAddress().c_str(), mTotalDelay);
+  ofLogNotice("", "Total delay for PixelPusher %s is %ld", getMacAddress().c_str(), mTotalDelay);
 
   if(!mSendReset && remainingStrips.empty()) {
 		this_thread::sleep_for(std::chrono::milliseconds(mTotalDelay));
@@ -165,7 +166,7 @@ void PixelPusher::sendPacket() {
   */
 
   while(!remainingStrips.empty()) {
-    sdfLog::logFormat("Sending data to PixelPusher %s at %s:%d", getMacAddress().c_str(), getIpAddress().c_str(), mPort);
+    ofLogNotice("", "Sending data to PixelPusher %s at %s:%d", getMacAddress().c_str(), getIpAddress().c_str(), mPort);
     payload = false;
     //packetLength = 0;
     //memcpy(&mPacket[0], &mPacketNumber, 4);
@@ -177,7 +178,7 @@ void PixelPusher::sendPacket() {
     mPacket.push_back(mPacketNumber & 0xFF);
     
     for(int i = 0; i < mMaxStripsPerPacket; i++) {
-      sdfLog::logFormat("Packing strip %d of %hu...", i, mMaxStripsPerPacket);
+      ofLogNotice("", "Packing strip %d of %hu...", i, mMaxStripsPerPacket);
 
       if(remainingStrips.empty()) {
 				this_thread::sleep_for(std::chrono::milliseconds(mTotalDelay));
@@ -207,9 +208,9 @@ void PixelPusher::sendPacket() {
     }
     
     if(payload) {
-      sdfLog::logFormat("Payload confirmed; sending packet of %d bytes", mPacket.size());
+      ofLogNotice("", "Payload confirmed; sending packet of %lu bytes", mPacket.size());
       mPacketNumber++;
-			mUdpConnection->SendTo(reinterpret_cast<char *>(mPacket.data()), mPacket.size(), mPort, getIpAddress().c_str());
+			mUdpConnection->Send(reinterpret_cast<char *>(mPacket.data()), mPacket.size());
       //mUdpConnection.Send(reinterpret_cast<char *>(mPacket.data()), mPacket.size());
       payload = false;
       this_thread::sleep_for(std::chrono::milliseconds(mTotalDelay));
@@ -217,7 +218,7 @@ void PixelPusher::sendPacket() {
   }
   }
 
-  sdfLog::logFormat("Closing Card Thread for PixelPusher %s", getMacAddress().c_str());
+  ofLogNotice("", "Closing Card Thread for PixelPusher %s", getMacAddress().c_str());
 }
 
 void PixelPusher::setPusherFlags(long pusherFlags) {
@@ -363,12 +364,12 @@ void PixelPusher::createStrips() {
 void PixelPusher::createCardThread() {
   createStrips();
 
-	mUdpConnection = new sdfServerSocket();
+	mUdpConnection = new ofxUDPManager();
 	bool reuse_buff = 1;
-	mUdpConnection->SetSockOpt(SO_REUSEADDR, &reuse_buff, sizeof(BOOL));
-	mUdpConnection->Create(mPort, SOCK_DGRAM);
+	mUdpConnection->Create();
+	mUdpConnection->Bind(mPort);
 
-  sdfLog::logFormat("Connected to PixelPusher %s on port %d", getIpAddress().c_str(), mPort);
+  ofLogNotice("", "Connected to PixelPusher %s on port %d", getIpAddress().c_str(), mPort);
   mPacketNumber = 0;
   mThreadExtraDelay = 0;
   mCardThread = std::thread(&PixelPusher::sendPacket, this);

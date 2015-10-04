@@ -1,4 +1,7 @@
+#ifdef TARGET_WIN32
 #include "stdafx.h"
+#endif
+
 #include "Pixel.h"
 
 unsigned char Pixel::mLinearExp[] = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,

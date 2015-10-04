@@ -1,9 +1,13 @@
+#ifdef TARGET_WIN32
 #include "stdafx.h"
+#endif
+
+#include "ofLog.h"
 #include "DeviceHeader.h"
 
 DeviceHeader::DeviceHeader(unsigned char* packet, int packetLength) {
   if(packetLength < sHeaderLength) {
-    sdfLog::logFormat("Incorrect package length in DeviceHeader constructor!");
+    ofLogWarning() << "Incorrect package length in DeviceHeader constructor!";
   }
 
   memcpy(&mMacAddress[0], &packet[0], 6);
@@ -17,9 +21,9 @@ DeviceHeader::DeviceHeader(unsigned char* packet, int packetLength) {
   memcpy(&mLinkSpeed, &packet[20], 4);
 
   if(mSoftwareRevision < mOldestAcceptableSoftwareRevision) {
-    sdfLog::logFormat("This PixelPusher Library requires firmware revision %f", mOldestAcceptableSoftwareRevision / 100.0);
-    sdfLog::logFormat("This PixelPusher is using %f", mSoftwareRevision / 100.0);
-    sdfLog::logFormat("This is not expected to work.  Please update your PixelPusher.");
+    ofLogError() << "This PixelPusher Library requires firmware revision %f", mOldestAcceptableSoftwareRevision / 100.0;
+    ofLogError() << "This PixelPusher is using %f", mSoftwareRevision / 100.0;
+    ofLogError() << "This is not expected to work.  Please update your PixelPusher.";
   }
         
   mPacketRemainderLength = packetLength - sHeaderLength;

@@ -17,13 +17,17 @@
 #include <chrono>
 #include "Strip.h"
 #include "DeviceHeader.h"
+
+#ifdef TARGET_WIN32
 #include "sdfWindows.hpp"
 #include "sdfServerSocket.hpp"
+#endif
+
+#include "ofxUDPManager.h"
 
 class PixelPusher {
  public:
   PixelPusher(DeviceHeader* header);
-  ~PixelPusher();
   int getNumberOfStrips();
   std::deque<std::shared_ptr<Strip> > getStrips();
   std::deque<std::shared_ptr<Strip> > getTouchedStrips();
@@ -61,7 +65,7 @@ class PixelPusher {
   void sendPacket();
   static const int mTimeoutTime = 5;
   static const int mFrameLimit = 60;
-  sdfServerSocket* mUdpConnection;
+  ofxUDPManager* mUdpConnection;
   long mPusherFlags;
   DeviceHeader* mDeviceHeader;
   long mPacketNumber;

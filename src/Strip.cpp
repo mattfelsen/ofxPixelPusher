@@ -1,4 +1,7 @@
+#ifdef TARGET_WIN32
 #include "stdafx.h"
+#endif
+
 #include "Strip.h"
 
 Strip::Strip(short stripNumber, int length) {

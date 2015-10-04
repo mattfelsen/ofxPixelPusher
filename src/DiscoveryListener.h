@@ -17,8 +17,13 @@
 #include <thread>
 #include <mutex>
 #include <ctime>
+
+#ifdef TARGET_WIN32
 #include "sdfWindows.hpp"
 #include "sdfServerSocket.hpp"
+#endif
+
+#include "ofLog.h"
 #include "PixelPusher.h"
 
 class DiscoveryListener {
@@ -37,7 +42,7 @@ class DiscoveryListener {
   void updatePusher(std::string macAddress, std::shared_ptr<PixelPusher> pusher);
   void updatePusherMap();
   static DiscoveryListener* mDiscoveryService;
-	sdfServerSocket* mUdpConnection;
+	ofxUDPManager* mUdpConnection;
   int mMessageFlag;
   std::vector<char> mIncomingUdpMessage;
   std::vector<unsigned char> mUdpMessage;

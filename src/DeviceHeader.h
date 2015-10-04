@@ -4,7 +4,12 @@
 #include <string>
 #include <stdio.h>
 #include <iostream>
+
+#ifdef TARGET_WIN32
 #include "sdfWindows.hpp"
+#endif
+
+
 
 enum DeviceType {
   ETHERDREAM, 
